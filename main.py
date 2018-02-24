@@ -4,7 +4,7 @@ import math
 from matplotlib import pyplot as plt
 
 hull_points_result = []
-
+hull_lines = []
 
 def orientation(pb, pe, pc):
     # Mencari letak dari titik, apakah di atas atau di bawah garis yang dibentuk oleh dua titik
@@ -48,16 +48,20 @@ def main():
         a = datetime.datetime.now()
         convexHull(sample_points)
         b = datetime.datetime.now()
-        print("Hull points = " + str(hull_points_result))
+        # Titik diurutkan secara counter-clockwise
+        centroid = (sum(pt[0] for pt in hull_points_result) / len(hull_points_result), sum(pt[1] for pt in hull_points_result) / len(hull_points_result))
+        hull_points_result.sort(key=lambda pt: math.atan2(pt[1] - centroid[1], pt[0] - centroid[0]))
+        # Mengubungkan titik-titik yang telah diurutkan
+        for idx in range(len(hull_points_result)):
+            hull_lines.append((hull_points_result[idx], hull_points_result[ (idx+1) % len(hull_points_result)]))
+        print("Hull points  = " + str(hull_points_result))
+        print("Hull lines   = " + str(hull_lines))
         print("Time elapsed = " + str(b-a))
         draw(hull_points_result, sample_points)
 
 
 def draw(hull, sample_points):
     # Menggambar hasil algoritna ke dalam suatu visualisasi
-    # Titik diurutkan secara counter-clockwise sebelum digambar
-    centroid = (sum(pt[0] for pt in hull) / len(hull), sum(pt[1] for pt in hull) / len(hull))
-    hull.sort(key=lambda pt: math.atan2(pt[1] - centroid[1], pt[0] - centroid[0]))
     drawable_hull = hull
     drawable_hull.append(drawable_hull[0])
     plt.suptitle("Convex Hull")
@@ -113,8 +117,6 @@ def convexHull(sample_points):
     # Algoritma pencarian titik terluar disertai dengan bagian DIVIDE
     mini = min(sample_points)
     maxi = max(sample_points)
-    print("Max = "+str(maxi))
-    print("Min = "+str(mini))
     upper = []
     lower = []
     # Mebagi titik sesuai orientasinya
